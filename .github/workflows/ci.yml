@@ -1,0 +1,23 @@
+name: Python tests
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Model, CLI, and reproducibility tests
+        run: python -m unittest discover -s tests -v
+      - name: Run documented example
+        run: python -m cachelab examples/conflict.trace --size 64 --line-size 16 --ways 2
+      - name: Reproduce comparison table
+        run: python -m experiments.compare
